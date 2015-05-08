@@ -11,4 +11,4 @@ Stormpath SDK test (https://stormpath.com/)
  * password - stormpath user password
 
 # Run
-java -jar stormpath-test.jar -DbaseUrl={url} -DapiKeyId={key.id} -DapiKeySecret={key.secret} -Dapplication={application} -Dusername={user} -Dpassword={password}
+java -DbaseUrl={url} -DapiKeyId={key.id} -DapiKeySecret={key.secret} -Dapplication={application} -Dusername={user} -Dpassword={password} -jar stormpath-test.jar
