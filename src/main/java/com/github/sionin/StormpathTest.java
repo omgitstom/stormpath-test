@@ -19,7 +19,7 @@ public class StormpathTest {
 
     public static void main(String[] args) throws Exception {
 
-        System.out.println("\n\n\nTest get user info by access token without user groups iteration");
+        System.out.println("Test get user info by access token without user groups iteration");
         StormpathClientWrapper clientWrapper = new StormpathClientWrapper() {
             protected UserWrapper getUser(Account account) {
                 return getUserWithoutGroups(account);
