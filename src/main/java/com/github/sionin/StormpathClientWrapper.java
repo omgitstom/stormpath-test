@@ -22,7 +22,7 @@ import com.stormpath.sdk.oauth.AccessTokenResult;
 import com.stormpath.sdk.oauth.OauthAuthenticationResult;
 import com.stormpath.sdk.oauth.OauthRequestAuthenticator;
 import com.stormpath.sdk.oauth.TokenResponse;
-import javafx.util.Pair;
+import org.apache.commons.lang3.tuple.Pair;
 import org.mockito.Mockito;
 
 import javax.servlet.http.HttpServletRequest;
@@ -66,7 +66,7 @@ public abstract class StormpathClientWrapper {
         AuthenticationResult authenticationResult = application.authenticateAccount(usernamePasswordRequest);
         Account account = authenticationResult.getAccount();
 
-        return new Pair<UserWrapper, TokenResponse>(getUser(account), getToken(account));
+        return Pair.of(getUser(account), getToken(account));
     }
 
     public UserWrapper authorize(String token) throws Exception {
