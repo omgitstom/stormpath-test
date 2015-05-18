@@ -1,6 +1,7 @@
 package com.github.sionin;
 
 import com.stormpath.sdk.account.Account;
+import com.stormpath.sdk.account.AccountCriteria;
 import com.stormpath.sdk.account.AccountList;
 import com.stormpath.sdk.account.Accounts;
 import com.stormpath.sdk.api.ApiKey;
@@ -141,7 +142,9 @@ public abstract class StormpathClientWrapper {
 
     public List<Directory> getDirectories(Set<String> names) {
 
-        AccountStoreMappingList storeMappings = getAccountStoreMappings();
+        AccountStoreMappingList accountStoreMappings = application.getAccountStoreMappings();
+
+        AccountStoreMappingList storeMappings = accountStoreMappings;
         if (storeMappings == null) {
             return Collections.emptyList();
         }
@@ -156,10 +159,9 @@ public abstract class StormpathClientWrapper {
 
     private List<Directory> iterateStoreMappings(Set<String> names, AccountStoreMappingList storeMappings) {
         List<Directory> directories = new ArrayList<Directory>();
-        long time = System.currentTimeMillis();
 
         for (AccountStoreMapping storeMapping : storeMappings) {
-            AccountStore accountStore = getAccountStore(storeMapping);
+            AccountStore accountStore = storeMapping.getAccountStore();
             if (accountStore instanceof Directory) {
                 Directory directory = (Directory) accountStore;
                 if (directory.getStatus() == DirectoryStatus.ENABLED
@@ -169,69 +171,39 @@ public abstract class StormpathClientWrapper {
                 }
             }
         }
-
-//        System.out.println(String.format("exit: iterateStoreMappings([names, storeMappings]) = %d", System.currentTimeMillis() - time));
-
         return directories;
     }
 
-    private AccountStore getAccountStore(AccountStoreMapping storeMapping) {
-        long time = System.currentTimeMillis();
-
-        AccountStore accountStore = storeMapping.getAccountStore();
-
-//        System.out.println(String.format("exit: getAccountStore([storeMapping]) = %d", System.currentTimeMillis() - time));
-
-        return accountStore;
-    }
-
-    private AccountStoreMappingList getAccountStoreMappings() {
-        long time = System.currentTimeMillis();
-
-        AccountStoreMappingList accountStoreMappings = application.getAccountStoreMappings();
-
-//        System.out.println(String.format("exit: getAccountStoreMappings([]) = %d", System.currentTimeMillis() - time));
-
-        return accountStoreMappings;
-    }
-
-
-    public List<UserWrapper> getUsers(String customerId) {
-        return getUsers(Collections.singleton(customerId));
-    }
 
     public List<UserWrapper> getUsers(Set<String> customerIds) {
-
-        AccountList accounts = getAccounts();
+        AccountList accounts = application.getAccounts(getAccountsCriteria());
         List<UserWrapper> users = iterateAccountList(customerIds, accounts);
         return users;
     }
 
     private List<UserWrapper> iterateAccountList(Set<String> customerIds, AccountList accounts) {
-        long time = System.currentTimeMillis();
+        int size = accounts.getSize();
+        List<UserWrapper> users = new ArrayList<UserWrapper>(size);
+        Iterator<Account> iterator = accounts.iterator();
 
-        List<UserWrapper> users = new ArrayList<UserWrapper>();
-        if (accounts != null) {
-            for (Account account : accounts) {
-                if (customerIds == null || customerIds.isEmpty() || customerIds.contains(account.getDirectory().getName())) {
-                    users.add(getUser(account));
-                }
-            }
+        boolean hasNext = iterator.hasNext();
+        while (hasNext) {
+            Account account = iterator.next();
+//            if (customerIds == null || customerIds.isEmpty() || customerIds.contains(account.getDirectory().getName())) {
+            users.add(getUser(account));
+//            }
+//            long htime = System.currentTimeMillis();
+            hasNext = iterator.hasNext();
+//            htime = System.currentTimeMillis() - htime;
+//            if(htime > 0) System.out.println("hasNext time = " + htime);
         }
 
-//        System.out.println(String.format("exit: iterateAccountList([customerIds, accounts]) = %d", System.currentTimeMillis() - time));
-
         return users;
+
     }
 
-    private AccountList getAccounts() {
-        long time = System.currentTimeMillis();
 
-        AccountList accounts = application.getAccounts(Accounts.criteria().limitTo(100).withDirectory());
-//        AccountList accounts = getResource(application.getAccounts().getHref(), AccountList.class);
-
-//        System.out.println(String.format("exit: getAccounts([]) = %d", System.currentTimeMillis() - time));
-
-        return accounts;
+    protected AccountCriteria getAccountsCriteria() {
+        return Accounts.criteria().limitTo(100).withDirectory();
     }
 }

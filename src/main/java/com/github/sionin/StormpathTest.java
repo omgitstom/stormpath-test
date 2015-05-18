@@ -1,6 +1,8 @@
 package com.github.sionin;
 
 import com.stormpath.sdk.account.Account;
+import com.stormpath.sdk.account.AccountCriteria;
+import com.stormpath.sdk.account.Accounts;
 import com.stormpath.sdk.directory.CustomData;
 import com.stormpath.sdk.directory.Directory;
 import com.stormpath.sdk.group.Group;
@@ -23,28 +25,45 @@ public class StormpathTest {
 
     public static void main(String[] args) throws Exception {
 
-        System.out.println("Test without user groups iteration");
+        System.out.println("Test without any additional user data");
+        StormpathClientWrapper clientWrapper0 = new StormpathClientWrapper() {
+            protected UserWrapper getUser(Account account) {
+                return getUserWithoutAnyData(this, account);
+            }
+
+            protected AccountCriteria getAccountsCriteria() {
+                return Accounts.criteria().limitTo(50);
+            }
+        };
+        testGetAllUsers(clientWrapper0, 2);
+
+        System.out.println("\n\nTest without user groups iteration");
         StormpathClientWrapper clientWrapper = new StormpathClientWrapper() {
             protected UserWrapper getUser(Account account) {
                 return getUserWithoutGroups(this, account);
             }
-        };
-        testGetAllDirectories(clientWrapper, 5);
-        testGetAllUsers(clientWrapper, 5);
-        testAuthorization(clientWrapper, 10);
-//
 
-//        System.out.println("\n\n\nTest full user info");
-//        StormpathClientWrapper clientWrapper2 = new StormpathClientWrapper() {
-//            protected UserWrapper getUser(Account account) {
-//                return getFullUser(this, account);
-//            }
-//        };
-//        testGetAllDirectories(clientWrapper2, 1);
-//        testGetAllUsers(clientWrapper2, 1);
-//        testAuthorization(clientWrapper2, 10);
+            protected AccountCriteria getAccountsCriteria() {
+                return Accounts.criteria().limitTo(50).withCustomData().withDirectory();
+            }
+        };
+        testGetAllUsers(clientWrapper, 2);
+
+        System.out.println("\n\nTest full user info");
+        StormpathClientWrapper clientWrapper2 = new StormpathClientWrapper() {
+            protected UserWrapper getUser(Account account) {
+                return getFullUser(this, account);
+            }
+
+            protected AccountCriteria getAccountsCriteria() {
+                return Accounts.criteria().limitTo(50).withCustomData().withGroups().withDirectory();
+            }
+        };
+        testGetAllUsers(clientWrapper2, 2);
+
+
 //
-//        System.out.println("\n\n\nTest full user info with groups cache");
+//        System.out.println("\n\nTest full user info with groups cache");
 //        StormpathClientWrapper clientWrapper3 = new StormpathClientWrapper() {
 //            protected UserWrapper getUser(Account account) {
 //                return getUserWithCachedGroups(this, account);
@@ -167,8 +186,17 @@ public class StormpathTest {
         return new UserWrapper(
                 account.getUsername(),
                 account.getEmail(),
-                new HashMap<String, Object>(getCustomData(clientWrapper, account)),
+                new HashMap<String, Object>(account.getCustomData()),
                 groups
+        );
+    }
+
+    private static UserWrapper getUserWithoutAnyData(StormpathClientWrapper clientWrapper, Account account) {
+        return new UserWrapper(
+                account.getUsername(),
+                account.getEmail(),
+                new HashMap<String, Object>(),
+                new HashSet<String>()
         );
     }
 
@@ -179,7 +207,7 @@ public class StormpathTest {
         return new UserWrapper(
                 account.getUsername(),
                 account.getEmail(),
-                new HashMap<String, Object>(getCustomData(clientWrapper, account)),
+                new HashMap<String, Object>(account.getCustomData()),
                 groups
         );
     }
