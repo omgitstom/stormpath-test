@@ -37,18 +37,6 @@ public class StormpathTest {
         };
         testGetAllUsers(clientWrapper0, 2);
 
-        System.out.println("\n\nTest without user groups iteration");
-        StormpathClientWrapper clientWrapper = new StormpathClientWrapper() {
-            protected UserWrapper getUser(Account account) {
-                return getUserWithoutGroups(this, account);
-            }
-
-            protected AccountCriteria getAccountsCriteria() {
-                return Accounts.criteria().limitTo(50).withCustomData().withDirectory();
-            }
-        };
-        testGetAllUsers(clientWrapper, 2);
-
         System.out.println("\n\nTest full user info");
         StormpathClientWrapper clientWrapper2 = new StormpathClientWrapper() {
             protected UserWrapper getUser(Account account) {
@@ -61,7 +49,17 @@ public class StormpathTest {
         };
         testGetAllUsers(clientWrapper2, 2);
 
-
+//        System.out.println("\n\nTest without user groups iteration");
+//        StormpathClientWrapper clientWrapper = new StormpathClientWrapper() {
+//            protected UserWrapper getUser(Account account) {
+//                return getUserWithoutGroups(this, account);
+//            }
+//
+//            protected AccountCriteria getAccountsCriteria() {
+//                return Accounts.criteria().limitTo(50).withCustomData().withDirectory();
+//            }
+//        };
+//        testGetAllUsers(clientWrapper, 2);
 //
 //        System.out.println("\n\nTest full user info with groups cache");
 //        StormpathClientWrapper clientWrapper3 = new StormpathClientWrapper() {
