@@ -15,14 +15,18 @@ import com.stormpath.sdk.client.Client;
 import com.stormpath.sdk.client.ClientBuilder;
 import com.stormpath.sdk.client.Clients;
 import com.stormpath.sdk.directory.AccountStore;
+import com.stormpath.sdk.directory.CustomData;
 import com.stormpath.sdk.directory.Directory;
 import com.stormpath.sdk.directory.DirectoryStatus;
+import com.stormpath.sdk.group.Group;
+import com.stormpath.sdk.group.GroupList;
 import com.stormpath.sdk.impl.http.ServletHttpRequest;
 import com.stormpath.sdk.impl.oauth.authc.AccessTokenAuthenticationRequest;
 import com.stormpath.sdk.impl.util.Base64;
 import com.stormpath.sdk.oauth.AccessTokenResult;
 import com.stormpath.sdk.oauth.OauthAuthenticationResult;
 import com.stormpath.sdk.oauth.OauthRequestAuthenticator;
+import com.stormpath.sdk.cache.*;
 import com.stormpath.sdk.oauth.TokenResponse;
 import com.stormpath.sdk.resource.Resource;
 import org.apache.commons.lang3.tuple.Pair;
@@ -30,6 +34,7 @@ import org.mockito.Mockito;
 
 import javax.servlet.http.HttpServletRequest;
 import java.util.*;
+import java.util.concurrent.TimeUnit;
 
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.when;
@@ -50,17 +55,23 @@ public abstract class StormpathClientWrapper {
             clientBuilder.setBaseUrl(baseUrl.trim());
         }
 
-//        CacheManager cacheManager = Caches.newCacheManager()
-//                .withDefaultTimeToLive(10, TimeUnit.MINUTES) //general default
-//                .withDefaultTimeToIdle(10, TimeUnit.MINUTES) //general default
-//                .withCache(Caches.forResource(GroupList.class) //Application-specific cache settings
-//                        .withTimeToLive(10, TimeUnit.MINUTES)
-//                        .withTimeToIdle(10, TimeUnit.MINUTES))
-//                .withCache(Caches.forResource(Group.class) //Application-specific cache settings
-//                        .withTimeToLive(10, TimeUnit.MINUTES)
-//                        .withTimeToIdle(10, TimeUnit.MINUTES))
-//                .build(); //build the CacheManager
-//        clientBuilder.setCacheManager(cacheManager);
+        System.out.println(baseUrl);
+
+        CacheManager cacheManager = Caches.newCacheManager()
+                .withDefaultTimeToLive(10, TimeUnit.MINUTES) //general default
+                .withDefaultTimeToIdle(10, TimeUnit.MINUTES) //general default
+                .withCache(Caches.forResource(Group.class) //Application-specific cache settings
+                        .withTimeToLive(10, TimeUnit.MINUTES)
+                        .withTimeToIdle(10, TimeUnit.MINUTES))
+                .withCache(Caches.forResource(GroupList.class) //Application-specific cache settings
+                        .withTimeToLive(10, TimeUnit.MINUTES)
+                        .withTimeToIdle(10, TimeUnit.MINUTES))
+                .withCache(Caches.forResource(Account.class).withTimeToLive(10, TimeUnit.MINUTES)
+                        .withTimeToIdle(10, TimeUnit.MINUTES))
+                .withCache(Caches.forResource(CustomData.class).withTimeToLive(10, TimeUnit.MINUTES)
+                        .withTimeToIdle(10, TimeUnit.MINUTES))
+                .build(); //build the CacheManager
+        clientBuilder.setCacheManager(cacheManager);
 
         client = clientBuilder.build();
         application = getApplication(System.getProperty("application"));
@@ -189,13 +200,10 @@ public abstract class StormpathClientWrapper {
         boolean hasNext = iterator.hasNext();
         while (hasNext) {
             Account account = iterator.next();
-//            if (customerIds == null || customerIds.isEmpty() || customerIds.contains(account.getDirectory().getName())) {
+
             users.add(getUser(account));
-//            }
-//            long htime = System.currentTimeMillis();
+
             hasNext = iterator.hasNext();
-//            htime = System.currentTimeMillis() - htime;
-//            if(htime > 0) System.out.println("hasNext time = " + htime);
         }
 
         return users;
@@ -204,6 +212,6 @@ public abstract class StormpathClientWrapper {
 
 
     protected AccountCriteria getAccountsCriteria() {
-        return Accounts.criteria().limitTo(100).withDirectory();
+        return Accounts.criteria().limitTo(100).withDirectory().withCustomData().withGroups();
     }
 }

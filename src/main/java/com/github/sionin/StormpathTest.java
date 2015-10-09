@@ -32,7 +32,7 @@ public class StormpathTest {
             }
 
             protected AccountCriteria getAccountsCriteria() {
-                return Accounts.criteria().limitTo(50);
+                return Accounts.criteria().limitTo(100);
             }
         };
         testGetAllUsers(clientWrapper0, 2);
@@ -44,7 +44,7 @@ public class StormpathTest {
             }
 
             protected AccountCriteria getAccountsCriteria() {
-                return Accounts.criteria().limitTo(50).withCustomData().withGroups().withDirectory();
+                return Accounts.criteria().limitTo(100).withCustomData().withGroups().withDirectory();
             }
         };
         testGetAllUsers(clientWrapper2, 2);
@@ -115,7 +115,7 @@ public class StormpathTest {
                     return clientWrapper.getUsers(Collections.EMPTY_SET);
                 }
             }));
-            TimeUnit.SECONDS.sleep(1);
+
         }
 
         printResults(results);
@@ -218,6 +218,7 @@ public class StormpathTest {
 
     private static UserWrapper getUserWithCachedGroups(StormpathClientWrapper clientWrapper, Account account) {
         GroupList groupList = account.getGroups();
+
         assert groupList != null;
         String href = groupList.getHref();
 
