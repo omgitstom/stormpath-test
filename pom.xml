@@ -9,7 +9,7 @@
     <version>1.0-SNAPSHOT</version>
 
     <properties>
-        <stormpath-sdk-version>1.0.RC4.2</stormpath-sdk-version>
+        <stormpath-sdk-version>1.0.RC8.6</stormpath-sdk-version>
         <jdk.target>1.7</jdk.target>
         <jdk.source>1.7</jdk.source>
     </properties>
